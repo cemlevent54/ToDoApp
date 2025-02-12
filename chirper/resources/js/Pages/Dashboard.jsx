@@ -1,7 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import Tasks from '@/Pages/Tasks'; // Tasks bileşeni eklendi
 
-export default function Dashboard() {
+export default function Dashboard({ tasks = [] }) {
+    console.log("Dashboard received tasks:", tasks); // 🔥 Debug log
+
     return (
         <AuthenticatedLayout
             header={
@@ -16,7 +19,10 @@ export default function Dashboard() {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            You're logged in!
+                            <p className="mb-4">You're logged in!</p>
+
+                            {/* 📝 Tasks.jsx bileşeni eklendi */}
+                            <Tasks tasks={tasks} />
                         </div>
                     </div>
                 </div>
