@@ -31,7 +31,7 @@ export default function Dashboard() {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {/* 📌 Kullanıcı Bilgisi Ayrı Bir Alan */}
+                    {/* 📌 Kullanıcı Bilgisi */}
                     <div className="bg-white shadow-sm sm:rounded-lg p-6 mb-6">
                         <p className="text-gray-900">You're logged in!</p>
                     </div>
