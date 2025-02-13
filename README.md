@@ -26,21 +26,8 @@ Bu proje, Laravel, Inertia.js, React ve Tailwind CSS kullanılarak geliştirilmi
 
 ```
 git clone https://github.com/cemlevent54/ToDoApp.git
+cd ToDoApp
 cd TaskProject
-```
-
-### 📌 Frontend Kurulumu (React + Inertia.js)
-
-Node.js bağımlılıklarını yükleyin:
-
-```
-npm install
-```
-
-Vite geliştirme sunucusunu başlatın:
-
-```
-npm run dev
 ```
 
 ### 📌 Backend Kurulumu (Laravel)
@@ -48,13 +35,29 @@ npm run dev
 Laravel bağımlılıklarını yükleyin:
 
 ```
+# before frontend
 composer install
-```
+cp .env.example .env
+php artisan key:generate
+php artisan config:clear
+php artisan cache:clear
+php artisan config:cache
 
-Laravel geliştirme sunucusunu başlatın:
+# after frontend
+php artisan migrate
+php artisan storage:link
 
-```
 php artisan serve
+```
+
+### 📌 Frontend Kurulumu (React + Inertia.js)
+
+Node.js bağımlılıklarını yükleyin ve Vite geliştirme sunucusunu başlatın:
+
+```
+npm install
+npm run build
+npm run dev
 ```
 
 📂 Proje Dosya Yapısı (Project Structure)
