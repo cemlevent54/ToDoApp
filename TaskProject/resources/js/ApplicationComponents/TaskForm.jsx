@@ -7,6 +7,7 @@ export default function TaskForm({ isOpen, onClose, task }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("");
+    const [isCompleted, setIsCompleted] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
@@ -14,10 +15,12 @@ export default function TaskForm({ isOpen, onClose, task }) {
             setTitle(task.title ?? "");
             setDescription(task.description ?? "");
             setCategory(task.category_id ?? categories?.[0]?.id ?? "");
+            setIsCompleted(task.is_completed);
         } else {
             setTitle("");
             setDescription("");
             setCategory(categories?.[0]?.id ?? "");
+            setIsCompleted(false);
         }
     }, [task, categories]);
 
@@ -28,11 +31,11 @@ export default function TaskForm({ isOpen, onClose, task }) {
         if (task) {
             Inertia.put(`/tasks/${task.id}`, data, {
                 onSuccess: () => {
-                    setShowToast(true); // ✅ Toast mesajı göster
+                    setShowToast(true);
                     setTimeout(() => {
                         setShowToast(false);
-                        onClose(); // ✅ Modalı kapat
-                        Inertia.visit("/dashboard"); // ✅ Dashboard'a yönlendir
+                        onClose();
+                        Inertia.visit("/dashboard");
                     }, 2000);
                 }
             });
@@ -57,44 +60,56 @@ export default function TaskForm({ isOpen, onClose, task }) {
                     {task ? "Edit Task" : "New Task"}
                 </h2>
 
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Task Title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="w-full p-2 border rounded-md mb-2"
-                        required
-                    />
-
-                    <textarea
-                        placeholder="Task Description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full p-2 border rounded-md mb-2"
-                    ></textarea>
-
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full p-2 border rounded-md mb-2"
-                    >
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </option>
-                        ))}
-                    </select>
-
-                    <div className="flex justify-end mt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-400 text-white rounded-md">
-                            Cancel
-                        </button>
-                        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
-                            {task ? "Update" : "Create"}
+                {/* Eğer görev tamamlandıysa düzenlemeye kapalı hale getir */}
+                {isCompleted ? (
+                    <div>
+                        <p className="text-gray-700"><strong>Title:</strong> {title}</p>
+                        <p className="text-gray-700"><strong>Description:</strong> {description || "No description provided."}</p>
+                        <p className="text-gray-700"><strong>Category:</strong> {categories.find(cat => cat.id === category)?.name || "Uncategorized"}</p>
+                        <button onClick={onClose} className="px-4 py-2 mt-4 bg-gray-400 text-white rounded-md w-full">
+                            Close
                         </button>
                     </div>
-                </form>
+                ) : (
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            type="text"
+                            placeholder="Task Title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="w-full p-2 border rounded-md mb-2"
+                            required
+                        />
+
+                        <textarea
+                            placeholder="Task Description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="w-full p-2 border rounded-md mb-2"
+                        ></textarea>
+
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            className="w-full p-2 border rounded-md mb-2"
+                        >
+                            {categories.map((cat) => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <div className="flex justify-end mt-4">
+                            <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-400 text-white rounded-md">
+                                Cancel
+                            </button>
+                            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
+                                {task ? "Update" : "Create"}
+                            </button>
+                        </div>
+                    </form>
+                )}
             </div>
 
             {/* 📌 Toast Mesajı */}

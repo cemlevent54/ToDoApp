@@ -5,16 +5,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
     const [isCompleted, setIsCompleted] = useState(task.is_completed);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // ✅ Görevi Tamamlama (is_completed güncelleniyor)
-    const toggleComplete = (event) => {
-        event.preventDefault();
-        Inertia.put(`/tasks/${task.id}/complete`, {}, {
-            onSuccess: () => {
-                setIsCompleted(!isCompleted);
-            },
-        });
-    };
-
     // ✅ Görevi Silme (Onay Modallı)
     const confirmDelete = () => {
         setShowDeleteModal(true);
@@ -38,9 +28,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
             <div className="flex justify-between mt-4 space-x-2">
                 <button onClick={() => onEdit(task)} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600">
                     Edit
-                </button>
-                <button onClick={toggleComplete} className={`px-3 py-1 rounded-md ${isCompleted ? "bg-gray-400" : "bg-green-500 text-white hover:bg-green-600"}`}>
-                    {isCompleted ? "Undo" : "Complete"}
                 </button>
                 <button onClick={confirmDelete} className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
                     Delete

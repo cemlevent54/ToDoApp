@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('tasks', TaskController::class)->except(['show', 'edit', 'create']);
     Route::put('/tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
     Route::put('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+    Route::put('/tasks/{task}/toggle-complete', [TaskController::class, 'toggleComplete']);
 
 });
 

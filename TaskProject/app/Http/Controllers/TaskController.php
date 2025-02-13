@@ -70,6 +70,20 @@ class TaskController extends Controller
     
         return redirect()->route('dashboard')->with('success', 'Task status updated successfully!');
     }
+
+    public function toggleComplete(Request $request, Task $task) {
+        if ($task->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+    
+        // 📌 is_completed durumunu güncelle
+        $task->update([
+            'is_completed' => $request->is_completed
+        ]);
+    
+        return redirect()->route('dashboard')->with('success', 'Task status updated successfully!');
+    }
+    
     
 
     // 📌 Görevi sil
