@@ -25,9 +25,7 @@ export default function Dashboard() {
         });
 
         setFilteredTasks(newFilteredTasks);
-
-        console.log("Filtered Tasks: ", newFilteredTasks); // Filtrelenmiş görevleri kontrol et
-    }, [searchQuery, selectedCategory, tasks]); // tasks'e bağlı olarak filtreleme işlemini tetikle
+    }, [searchQuery, selectedCategory, tasks]);
 
     // ✅ Görevlerin Drag & Drop sonrası state’ini güncelle
     const updateTasks = (updatedTasks) => {
@@ -53,9 +51,34 @@ export default function Dashboard() {
 
                     {/* 📌 Görev Yönetim Alanı */}
                     <div className="bg-white shadow-sm sm:rounded-lg p-6">
-                        {/* 🔍 Search Bar ve Filtreleme */}
+                        {/* 🔍 Search Bar ve Kategori Butonları */}
                         <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-                            
+                            <input
+                                type="text"
+                                placeholder="Search tasks..."
+                                className="p-2 border rounded-md w-full md:w-1/3"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+
+                            {/* 🏷️ Kategori Butonları */}
+                            <div className="flex space-x-2 overflow-auto mt-2 md:mt-0">
+                                <button
+                                    className={`px-3 py-1 border rounded-md ${selectedCategory === "All" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                                    onClick={() => setSelectedCategory("All")}
+                                >
+                                    All
+                                </button>
+                                {categories.map((category) => (
+                                    <button
+                                        key={category.id}
+                                        className={`px-3 py-1 border rounded-md ${selectedCategory === category.id ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                                        onClick={() => setSelectedCategory(category.id)}
+                                    >
+                                        {category.name}
+                                    </button>
+                                ))}
+                            </div>
 
                             {/* ➕ Yeni Görev Ekle Butonu */}
                             <button
