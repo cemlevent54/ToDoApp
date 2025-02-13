@@ -6,7 +6,6 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\TaskCategory;
 
-
 class TaskCategorySeeder extends Seeder
 {
     /**
@@ -14,10 +13,12 @@ class TaskCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = ['Work', 'Personal', 'Other'];
-
-        foreach ($categories as $category) {
-            TaskCategory::create(['name' => $category]);
-        }
+        //
+        TaskCategory::insert([
+            ['name' => 'Personal'],
+            ['name' => 'Work'],
+            ['name' => 'Education'],
+            ['name' => 'Other'],
+        ]);
     }
 }

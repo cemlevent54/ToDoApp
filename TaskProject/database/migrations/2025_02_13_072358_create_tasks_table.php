@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Kullanıcı ilişkisi
-            $table->string('title'); // Görev başlığı
-            $table->text('description')->nullable(); // Görev açıklaması (opsiyonel)
-            $table->boolean('is_completed')->default(false); // Görev tamamlandı mı?
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->boolean('is_completed')->default(false);
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Kullanıcı ile ilişki
+            $table->foreignId('category_id')->nullable()->constrained('task_categories')->onDelete('set null'); // Kategori ile ilişki
             $table->timestamps();
         });
     }

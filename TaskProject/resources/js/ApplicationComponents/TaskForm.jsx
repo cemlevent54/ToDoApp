@@ -1,31 +1,52 @@
 import { useState, useEffect } from "react";
 import { Inertia } from "@inertiajs/inertia";
+import { usePage } from "@inertiajs/react";
 
 export default function TaskForm({ isOpen, onClose, task }) {
+    const { categories = [] } = usePage().props;
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("Work");
+    const [category, setCategory] = useState("");
+    const [showToast, setShowToast] = useState(false);
 
-    // 📌 Eğer düzenleme modundaysak mevcut görev verisini yükle
     useEffect(() => {
         if (task) {
-            setTitle(task.title);
-            setDescription(task.description);
-            setCategory(task.category || "Work");
+            setTitle(task.title ?? "");
+            setDescription(task.description ?? "");
+            setCategory(task.category_id ?? categories?.[0]?.id ?? "");
+        } else {
+            setTitle("");
+            setDescription("");
+            setCategory(categories?.[0]?.id ?? "");
         }
-    }, [task]);
+    }, [task, categories]);
 
-    // ✅ Form Gönderme (Ekleme/Güncelleme)
     const handleSubmit = (e) => {
         e.preventDefault();
-        
-        const data = { title, description, category };
-        console.log(data);
+        const data = { title, description, category_id: category };
 
         if (task) {
-            Inertia.put(`/tasks/${task.id}`, data, { onSuccess: () => onClose() });
+            Inertia.put(`/tasks/${task.id}`, data, {
+                onSuccess: () => {
+                    setShowToast(true); // ✅ Toast mesajı göster
+                    setTimeout(() => {
+                        setShowToast(false);
+                        onClose(); // ✅ Modalı kapat
+                        Inertia.visit("/dashboard"); // ✅ Dashboard'a yönlendir
+                    }, 2000);
+                }
+            });
         } else {
-            Inertia.post("/tasks", data, { onSuccess: () => onClose() });
+            Inertia.post("/tasks", data, {
+                onSuccess: () => {
+                    setShowToast(true);
+                    setTimeout(() => {
+                        setShowToast(false);
+                        onClose();
+                        Inertia.visit("/dashboard");
+                    }, 2000);
+                }
+            });
         }
     };
 
@@ -45,27 +66,27 @@ export default function TaskForm({ isOpen, onClose, task }) {
                         className="w-full p-2 border rounded-md mb-2"
                         required
                     />
-                    
+
                     <textarea
                         placeholder="Task Description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         className="w-full p-2 border rounded-md mb-2"
-                        required
                     ></textarea>
 
-                    {/* 📌 Kategori Seçimi */}
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         className="w-full p-2 border rounded-md mb-2"
                     >
-                        <option value="Work">Work</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Other">Other</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
                     </select>
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-end mt-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-400 text-white rounded-md">
                             Cancel
                         </button>
@@ -75,6 +96,13 @@ export default function TaskForm({ isOpen, onClose, task }) {
                     </div>
                 </form>
             </div>
+
+            {/* 📌 Toast Mesajı */}
+            {showToast && (
+                <div className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-md shadow-lg">
+                    {task ? "Task Updated!" : "Task Created!"}
+                </div>
+            )}
         </div>
     ) : null;
 }

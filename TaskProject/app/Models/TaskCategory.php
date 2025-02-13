@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Task;
-
 
 class TaskCategory extends Model
 {
@@ -13,7 +11,8 @@ class TaskCategory extends Model
 
     protected $fillable = ['name'];
 
-    public function tasks() {
-        return $this->hasMany(Task::class, 'task_category_id'); // Bir kategoriye bağlı birden fazla görev olabilir
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'category_id');
     }
 }
