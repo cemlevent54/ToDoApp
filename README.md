@@ -106,3 +106,5 @@ TaskProject/
 ```
 
 ## 🎥 Proje Demo Videosu
+
+## [![Watch the Project Demo](https://img.youtube.com/vi/KlMk7oX-yl8/0.jpg)](https://www.youtube.com/watch?v=KlMk7oX-yl8)
