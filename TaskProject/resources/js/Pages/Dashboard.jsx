@@ -35,36 +35,40 @@ export default function Dashboard() {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
             }
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
+            <div className="py-12 bg-gray-100 min-h-screen">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* 📌 Kullanıcı Bilgisi */}
-                    <div className="bg-white shadow-sm sm:rounded-lg p-6 mb-6">
-                        <p className="text-gray-900">You're logged in!</p>
+                    <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+                        <p className="text-gray-700 text-lg font-semibold">
+                            ✅ You're logged in!
+                        </p>
                     </div>
 
                     {/* 📌 Görev Yönetim Alanı */}
-                    <div className="bg-white shadow-sm sm:rounded-lg p-6">
+                    <div className="bg-white shadow-md rounded-lg p-6">
                         {/* 🔍 Search Bar ve Kategori Butonları */}
-                        <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                             <input
                                 type="text"
-                                placeholder="Search tasks..."
-                                className="p-2 border rounded-md w-full md:w-1/3"
+                                placeholder="🔍 Search tasks..."
+                                className="p-3 border rounded-md w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
 
                             {/* 🏷️ Kategori Butonları */}
-                            <div className="flex space-x-2 overflow-auto mt-2 md:mt-0">
+                            <div className="flex flex-wrap gap-2">
                                 <button
-                                    className={`px-3 py-1 border rounded-md ${selectedCategory === "All" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                                    className={`px-4 py-2 text-sm font-semibold border rounded-md transition duration-200 ${
+                                        selectedCategory === "All"
+                                            ? "bg-blue-500 text-white"
+                                            : "bg-gray-200 hover:bg-gray-300"
+                                    }`}
                                     onClick={() => setSelectedCategory("All")}
                                 >
                                     All
@@ -72,7 +76,11 @@ export default function Dashboard() {
                                 {categories.map((category) => (
                                     <button
                                         key={category.id}
-                                        className={`px-3 py-1 border rounded-md ${selectedCategory === category.id ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                                        className={`px-4 py-2 text-sm font-semibold border rounded-md transition duration-200 ${
+                                            selectedCategory === category.id
+                                                ? "bg-blue-500 text-white"
+                                                : "bg-gray-200 hover:bg-gray-300"
+                                        }`}
                                         onClick={() => setSelectedCategory(category.id)}
                                     >
                                         {category.name}
@@ -82,10 +90,10 @@ export default function Dashboard() {
 
                             {/* ➕ Yeni Görev Ekle Butonu */}
                             <button
-                                className="px-4 py-2 bg-green-500 text-white rounded-md ml-2"
+                                className="px-5 py-3 bg-green-500 text-white font-semibold rounded-md shadow-md hover:bg-green-600 transition duration-200"
                                 onClick={() => { setSelectedTask(null); setModalOpen(true); }}
                             >
-                                +
+                                + Add Task
                             </button>
                         </div>
 
