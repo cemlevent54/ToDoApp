@@ -5,7 +5,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
     const [isCompleted, setIsCompleted] = useState(task.is_completed);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // ✅ Görevi Silme (Onay Modallı)
     const confirmDelete = () => {
         setShowDeleteModal(true);
     };
@@ -21,16 +20,14 @@ export default function TaskItem({ task, categoryName, onEdit }) {
 
     return (
         <div className={`p-5 rounded-lg shadow-md transition duration-300 ${isCompleted ? "bg-green-100" : "bg-white"} hover:shadow-lg border border-gray-200`}>
-            {/* 📌 Kategori */}
+    
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-1">
                 {categoryName}
             </p>
 
-            {/* 📝 Başlık ve Açıklama */}
             <h3 className="text-lg font-semibold text-gray-800">{task.title}</h3>
             <p className="text-gray-600 mt-1 text-sm">{task.description || "No description provided."}</p>
 
-            {/* 🎛️ Butonlar */}
             <div className="flex justify-between mt-4">
                 <button 
                     onClick={() => onEdit(task)} 

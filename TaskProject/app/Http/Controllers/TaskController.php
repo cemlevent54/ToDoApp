@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    // 📌 Kullanıcının görevlerini getir
     public function index() {
         return Inertia::render('Dashboard', [
             'tasks' => Task::where('user_id', Auth::id())->with('category')->get(),
@@ -18,7 +17,6 @@ class TaskController extends Controller
         ]);
     }
 
-    // 📌 Yeni görev oluştur
     public function store(Request $request) {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -37,7 +35,6 @@ class TaskController extends Controller
         return redirect()->back();
     }
 
-    // 📌 Görevi güncelle
     public function update(Request $request, Task $task) {
         if ($task->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -63,7 +60,6 @@ class TaskController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
     
-        // ✅ is_completed değerini tersine çevir
         $task->update([
             'is_completed' => !$task->is_completed
         ]);
@@ -76,7 +72,6 @@ class TaskController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
     
-        // 📌 is_completed durumunu güncelle
         $task->update([
             'is_completed' => $request->is_completed
         ]);
@@ -86,7 +81,6 @@ class TaskController extends Controller
     
     
 
-    // 📌 Görevi sil
     public function destroy(Task $task) {
         if ($task->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);

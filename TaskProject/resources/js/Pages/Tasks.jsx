@@ -47,15 +47,14 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
         <>
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* 📝 Yapılacak Görevler */}
                     <Droppable droppableId="pendingTasks">
                         {(provided) => (
                             <div
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
-                                className="bg-white shadow-md rounded-lg p-6"
+                                className="bg-white shadow-lg rounded-xl p-6"
                             >
-                                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                                <h3 className="text-2xl font-semibold text-gray-800 tracking-wide mb-4">
                                     🕒 Pending Tasks
                                 </h3>
                                 {pendingTasks.length > 0 ? (
@@ -67,6 +66,7 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
+                                                        className="transition transform hover:scale-[1.02]"
                                                     >
                                                         <TaskItem
                                                             task={task}
@@ -83,7 +83,7 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
                                         {provided.placeholder}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-center">
+                                    <p className="text-gray-500 text-center italic">
                                         No pending tasks. 🎉
                                     </p>
                                 )}
@@ -91,15 +91,14 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
                         )}
                     </Droppable>
 
-                    {/* ✅ Tamamlanmış Görevler */}
                     <Droppable droppableId="completedTasks">
                         {(provided) => (
                             <div
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
-                                className="bg-white shadow-md rounded-lg p-6"
+                                className="bg-white shadow-lg rounded-xl p-6"
                             >
-                                <h3 className="text-xl font-semibold text-green-600 mb-4">
+                                <h3 className="text-2xl font-semibold text-green-600 tracking-wide mb-4">
                                     ✅ Completed Tasks
                                 </h3>
                                 {completedTasks.length > 0 ? (
@@ -111,6 +110,7 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
+                                                        className="transition transform hover:scale-[1.02]"
                                                     >
                                                         <TaskItem
                                                             task={task}
@@ -127,7 +127,7 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
                                         {provided.placeholder}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-center">
+                                    <p className="text-gray-500 text-center italic">
                                         No completed tasks yet. Keep going! 🚀
                                     </p>
                                 )}
@@ -137,7 +137,6 @@ export default function Tasks({ tasks = [], categories = [], updateTasks }) {
                 </div>
             </DragDropContext>
 
-            {/* 📌 Edit Modal */}
             {modalOpen && (
                 <TaskForm
                     isOpen={modalOpen}

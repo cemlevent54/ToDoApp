@@ -35,38 +35,36 @@ export default function Dashboard() {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+                <h2 className="text-3xl font-bold text-gray-800 tracking-wide">
+                    🗂️ Dashboard
+                </h2>
             }
         >
             <Head title="Dashboard" />
 
-            <div className="py-12 bg-gray-100 min-h-screen">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    {/* 📌 Kullanıcı Bilgisi */}
-                    <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                        <p className="text-gray-700 text-lg font-semibold">
-                            ✅ You're logged in!
+            <div className="py-12 bg-gray-50 min-h-screen">
+                <div className="mx-auto max-w-5xl px-6">
+                    <div className="bg-white shadow-sm rounded-xl p-6 mb-6">
+                        <p className="text-gray-700 text-lg font-medium">
+                            ✅ Welcome back! Manage your tasks efficiently.
                         </p>
                     </div>
 
-                    {/* 📌 Görev Yönetim Alanı */}
-                    <div className="bg-white shadow-md rounded-lg p-6">
-                        {/* 🔍 Search Bar ve Kategori Butonları */}
+                    <div className="bg-white shadow-md rounded-xl p-6">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                             <input
                                 type="text"
                                 placeholder="🔍 Search tasks..."
-                                className="p-3 border rounded-md w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full md:w-1/3 p-3 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
 
-                            {/* 🏷️ Kategori Butonları */}
                             <div className="flex flex-wrap gap-2">
                                 <button
-                                    className={`px-4 py-2 text-sm font-semibold border rounded-md transition duration-200 ${
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                                         selectedCategory === "All"
-                                            ? "bg-blue-500 text-white"
+                                            ? "bg-blue-500 text-white shadow-md"
                                             : "bg-gray-200 hover:bg-gray-300"
                                     }`}
                                     onClick={() => setSelectedCategory("All")}
@@ -76,9 +74,9 @@ export default function Dashboard() {
                                 {categories.map((category) => (
                                     <button
                                         key={category.id}
-                                        className={`px-4 py-2 text-sm font-semibold border rounded-md transition duration-200 ${
+                                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                                             selectedCategory === category.id
-                                                ? "bg-blue-500 text-white"
+                                                ? "bg-blue-500 text-white shadow-md"
                                                 : "bg-gray-200 hover:bg-gray-300"
                                         }`}
                                         onClick={() => setSelectedCategory(category.id)}
@@ -88,19 +86,16 @@ export default function Dashboard() {
                                 ))}
                             </div>
 
-                            {/* ➕ Yeni Görev Ekle Butonu */}
                             <button
-                                className="px-5 py-3 bg-green-500 text-white font-semibold rounded-md shadow-md hover:bg-green-600 transition duration-200"
+                                className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-200"
                                 onClick={() => { setSelectedTask(null); setModalOpen(true); }}
                             >
-                                + Add Task
+                                ➕ Add Task
                             </button>
                         </div>
 
-                        {/* 📝 Görev Listesi */}
                         <Tasks tasks={filteredTasks} categories={categories} updateTasks={updateTasks} />
 
-                        {/* 🏗️ Modal Bileşeni */}
                         {modalOpen && (
                             <TaskForm
                                 isOpen={modalOpen}

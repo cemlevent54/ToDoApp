@@ -60,7 +60,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                     {task ? "Edit Task" : "New Task"}
                 </h2>
 
-                {/* Eğer görev tamamlandıysa, salt okunur göster */}
                 {isCompleted ? (
                     <div className="mt-4">
                         <p className="text-gray-700 text-lg"><strong>Title:</strong> {title}</p>
@@ -75,7 +74,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-                        {/* 📝 Başlık */}
                         <input
                             type="text"
                             placeholder="Title"
@@ -85,7 +83,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                             required
                         />
 
-                        {/* ✍️ Açıklama */}
                         <textarea
                             placeholder="Take a note..."
                             value={description}
@@ -93,7 +90,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                             className="w-full p-3 text-md border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
                         ></textarea>
 
-                        {/* 🏷️ Kategori Seçimi */}
                         <select
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
@@ -106,7 +102,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                             ))}
                         </select>
 
-                        {/* 📌 Butonlar */}
                         <div className="flex justify-end gap-2">
                             <button 
                                 type="button" 
@@ -126,7 +121,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                 )}
             </div>
 
-            {/* 📌 Toast Mesajı */}
             {showToast && (
                 <div className="fixed bottom-6 right-6 bg-green-500 text-white px-5 py-3 rounded-lg shadow-lg animate-bounce">
                     {task ? "Task Updated!" : "Task Created!"}
