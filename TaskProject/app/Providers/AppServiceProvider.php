@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\TaskCategoryService;
 use App\Services\TaskService;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -16,6 +17,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TaskService::class, function ($app) {
             return new TaskService();
         });
+
+        $this->app->singleton(TaskCategoryService::class, function ($app): TaskCategoryService {
+            return new TaskCategoryService();
+        });
+
+
     }
 
     /**

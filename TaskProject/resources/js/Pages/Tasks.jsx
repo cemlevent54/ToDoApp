@@ -8,22 +8,8 @@ export default function Tasks({ tasks = [], categories = [] }) {
     const [selectedTask, setSelectedTask] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
 
-    // Görevleri duruma göre ayıran state
-    const [sortedTasks, setSortedTasks] = useState({
-        pending: [],
-        ongoing: [],
-        completed: []
-    });
-
-    // tasks prop değiştiğinde görevleri status'e göre ayır
-    useEffect(() => {
-        console.log("Güncellenen tasks:", tasks); // Konsolda gelen veriyi kontrol et
-        setSortedTasks({
-            pending: tasks.filter(task => task.status === 0),
-            ongoing: tasks.filter(task => task.status === 1),
-            completed: tasks.filter(task => task.status === 2)
-        });
-    }, [tasks]);
+    // Görevleri status'e göre filtreleme
+    const getFilteredTasks = (status) => tasks.filter(task => task.status === status);
 
     // Drag & Drop sonrası güncelleme
     const onDragEnd = (result) => {
@@ -35,26 +21,19 @@ export default function Tasks({ tasks = [], categories = [] }) {
 
         if (sourceColumn === destinationColumn) return;
 
-        // Mevcut state'i klonla (Mutasyonu önlemek için)
-        const updatedTasks = { ...sortedTasks };
-
         // Taşınan görevi al
-        const movedTask = updatedTasks[sourceColumn].splice(source.index, 1)[0];
+        const movedTask = tasks.find(task => task.id.toString() === result.draggableId);
+        if (!movedTask) return;
 
         // Yeni statüye göre değer ata
-        movedTask.status = destinationColumn === "pending" ? 0 : destinationColumn === "ongoing" ? 1 : 2;
-
-        // Yeni sütuna ekle
-        updatedTasks[destinationColumn].splice(destination.index, 0, movedTask);
-
-        // Yeni state'i ayarla
-        setSortedTasks(updatedTasks);
+        const updatedStatus = destinationColumn === "pending" ? 0 :
+                              destinationColumn === "ongoing" ? 1 : 2;
 
         // Backend'e güncelleme gönder
         Inertia.put(`/tasks/${movedTask.id}/toggle-status`, {
-            status: movedTask.status
+            status: updatedStatus
         }, {
-            preserveScroll: true, // Sayfa yenilenmesini engeller
+            preserveScroll: true,
             onError: (errors) => {
                 console.error("Task status güncellenirken hata oluştu:", errors);
             }
@@ -82,9 +61,15 @@ export default function Tasks({ tasks = [], categories = [] }) {
                                             ? "🕒 Ongoing Tasks"
                                             : "✅ Completed Tasks"}
                                     </h3>
-                                    {sortedTasks[statusKey].length > 0 ? (
+                                    {getFilteredTasks(
+                                        statusKey === "pending" ? 0 :
+                                        statusKey === "ongoing" ? 1 : 2
+                                    ).length > 0 ? (
                                         <div className="space-y-4">
-                                            {sortedTasks[statusKey].map((task, index) => (
+                                            {getFilteredTasks(
+                                                statusKey === "pending" ? 0 :
+                                                statusKey === "ongoing" ? 1 : 2
+                                            ).map((task, index) => (
                                                 <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
                                                     {(provided) => (
                                                         <div

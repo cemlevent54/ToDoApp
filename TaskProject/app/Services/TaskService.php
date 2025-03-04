@@ -22,10 +22,14 @@ class TaskService {
     }
 
     public function getAllCategories(): Collection {
-        return TaskCategory::all();
+        return TaskCategory::where('user_id', Auth::id())->get();
     }
 
     public function createTask(array $data): Task {
+        if (!TaskCategory::where('id', $data['category_id'])->where('user_id', Auth::id())->exists()) {
+            throw new \Exception("Unauthorized category selection.");
+        }
+
         return Task::create([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
@@ -36,6 +40,10 @@ class TaskService {
     }
 
     public function updateTask(Task $task, array $data): Task {
+        if (isset($data['category_id']) && !TaskCategory::where('id', $data['category_id'])->where('user_id', Auth::id())->exists()) {
+            throw new \Exception("Unauthorized category selection.");
+        }
+
         $task->update([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,

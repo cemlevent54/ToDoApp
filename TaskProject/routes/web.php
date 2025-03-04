@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskCategoryController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -30,6 +31,12 @@ Route::middleware('auth')->group(function () {
     
     // 📌 Hatalı Route'lar kaldırıldı, yerine doğru route eklendi
     Route::put('/tasks/{task}/toggle-status', [TaskController::class, 'toggleStatus'])->name('tasks.toggleStatus');
+
+    // Kategori Yönetimi
+    Route::get('/categories', [TaskCategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [TaskCategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [TaskCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [TaskCategoryController::class, 'destroy'])->name('categories.destroy');
 });
 
 

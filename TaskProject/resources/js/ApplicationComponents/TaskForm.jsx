@@ -7,7 +7,7 @@ export default function TaskForm({ isOpen, onClose, task }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("");
-    const [isCompleted, setIsCompleted] = useState(false);
+    const [status, setStatus] = useState(0);
     const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
@@ -15,42 +15,37 @@ export default function TaskForm({ isOpen, onClose, task }) {
             setTitle(task.title ?? "");
             setDescription(task.description ?? "");
             setCategory(task.category_id ?? categories?.[0]?.id ?? "");
-            setIsCompleted(task.is_completed);
+            setStatus(task.status ?? 0);
         } else {
             setTitle("");
             setDescription("");
             setCategory(categories?.[0]?.id ?? "");
-            setIsCompleted(false);
+            setStatus(0);
         }
     }, [task, categories]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const data = { title, description, category_id: category };
+        const data = { title, description, category_id: category, status };
 
         if (task) {
             Inertia.put(`/tasks/${task.id}`, data, {
-                onSuccess: () => {
-                    setShowToast(true);
-                    setTimeout(() => {
-                        setShowToast(false);
-                        onClose();
-                        Inertia.visit("/dashboard");
-                    }, 2000);
-                }
+                onSuccess: () => showSuccessMessage(),
             });
         } else {
             Inertia.post("/tasks", data, {
-                onSuccess: () => {
-                    setShowToast(true);
-                    setTimeout(() => {
-                        setShowToast(false);
-                        onClose();
-                        Inertia.visit("/dashboard");
-                    }, 2000);
-                }
+                onSuccess: () => showSuccessMessage(),
             });
         }
+    };
+
+    const showSuccessMessage = () => {
+        setShowToast(true);
+        setTimeout(() => {
+            setShowToast(false);
+            onClose();
+            Inertia.visit("/dashboard");
+        }, 2000);
     };
 
     return isOpen ? (
@@ -60,7 +55,7 @@ export default function TaskForm({ isOpen, onClose, task }) {
                     {task ? "Edit Task" : "New Task"}
                 </h2>
 
-                {isCompleted ? (
+                {status === 2 ? ( // ✅ Completed görevler sadece görüntülenebilir!
                     <div className="mt-4">
                         <p className="text-gray-700 text-lg"><strong>Title:</strong> {title}</p>
                         <p className="text-gray-700 text-lg"><strong>Description:</strong> {description || "No description provided."}</p>

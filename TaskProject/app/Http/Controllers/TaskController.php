@@ -38,6 +38,10 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:task_categories,id'
         ]);
 
+        // if ($validatedData['category_id'] && !Auth::user()->taskCategories()->where('id', $validatedData['category_id'])->exists()) {
+        //     return response()->json(['error' => 'Unauthorized: You do not own this category'], 403);
+        // }
+
         $task = $this->taskService->createTask($validatedData);
 
         return redirect()->back();
@@ -56,6 +60,10 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:task_categories,id'
         ]);
+
+        // if ($validatedData['category_id'] && !Auth::user()->taskCategories()->where('id', $validatedData['category_id'])->exists()) {
+        //     return response()->json(['error' => 'Unauthorized: You do not own this category'], 403);
+        // }
 
         $updatedTask = $this->taskService->updateTask($task, $validatedData);
 

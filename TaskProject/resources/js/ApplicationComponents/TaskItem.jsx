@@ -2,33 +2,57 @@ import { useState } from "react";
 import { Inertia } from "@inertiajs/inertia";
 
 export default function TaskItem({ task, categoryName, onEdit }) {
-    const [isCompleted, setIsCompleted] = useState(task.is_completed);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-    const confirmDelete = () => {
-        setShowDeleteModal(true);
+    
+    // Status'e göre class belirleme
+    const getStatusClass = () => {
+        if (task.status === 0) return "bg-yellow-100"; // Pending
+        if (task.status === 1) return "bg-blue-100"; // Ongoing
+        return "bg-green-100"; // Completed
     };
 
+    // Görev durumunu değiştir
+    const toggleTaskStatus = () => {
+        const newStatus = task.status === 2 ? 0 : task.status + 1;
+        Inertia.put(`/tasks/${task.id}/toggle-status`, { status: newStatus }, {
+            preserveScroll: true,
+            onError: (errors) => console.error("Task status update failed:", errors),
+        });
+    };
+
+    // Silme işlemi için modal aç/kapat
+    const confirmDelete = () => setShowDeleteModal(true);
     const deleteTask = () => {
         setShowDeleteModal(false);
         Inertia.delete(`/tasks/${task.id}`, {
-            onSuccess: () => {
-                console.log("Task deleted successfully!");
-            },
+            onSuccess: () => console.log("Task deleted successfully!"),
         });
     };
 
     return (
-        <div className={`p-5 rounded-lg shadow-md transition duration-300 ${isCompleted ? "bg-green-100" : "bg-white"} hover:shadow-lg border border-gray-200`}>
-    
+        <div className={`p-5 rounded-lg shadow-md transition duration-300 ${getStatusClass()} hover:shadow-lg border border-gray-200`}>
+            {/* 📌 Kategori Adı */}
             <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-1">
                 {categoryName}
             </p>
 
+            {/* 📌 Görev Başlık ve Açıklama */}
             <h3 className="text-lg font-semibold text-gray-800">{task.title}</h3>
             <p className="text-gray-600 mt-1 text-sm">{task.description || "No description provided."}</p>
 
+            {/* 📌 İşlemler */}
             <div className="flex justify-between mt-4">
+                <button 
+                    onClick={toggleTaskStatus} 
+                    className={`px-4 py-2 text-sm font-semibold rounded-md shadow transition duration-200 ${
+                        task.status === 2 ? "bg-green-500 hover:bg-green-600 text-white" : 
+                        task.status === 1 ? "bg-blue-500 hover:bg-blue-600 text-white" :
+                        "bg-yellow-500 hover:bg-yellow-600 text-white"
+                    }`}
+                >
+                    {task.status === 2 ? "✅ Completed" : task.status === 1 ? "🔄 Ongoing" : "⏳ Pending"}
+                </button>
+                
                 <button 
                     onClick={() => onEdit(task)} 
                     className="px-4 py-2 text-sm font-semibold bg-blue-500 text-white rounded-md shadow hover:bg-blue-600 transition duration-200"
