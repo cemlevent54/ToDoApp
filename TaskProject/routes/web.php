@@ -24,12 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // 📌 Görev Yönetimi - Daha temiz bir yapı için `resource` kullanıldı
+    // 📌 Görev Yönetimi
     Route::resource('tasks', TaskController::class)->except(['show', 'edit', 'create']);
     Route::put('/tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
-    Route::put('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
-    Route::put('/tasks/{task}/toggle-complete', [TaskController::class, 'toggleComplete']);
-
+    
+    // 📌 Hatalı Route'lar kaldırıldı, yerine doğru route eklendi
+    Route::put('/tasks/{task}/toggle-status', [TaskController::class, 'toggleStatus'])->name('tasks.toggleStatus');
 });
+
 
 require __DIR__.'/auth.php';

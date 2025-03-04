@@ -7,94 +7,97 @@ use Inertia\Inertia;
 use App\Models\Task;
 use App\Models\TaskCategory;
 use Illuminate\Support\Facades\Auth;
+use App\Services\TaskService;
+use Illuminate\Database\Eloquent\Collection;
 
 class TaskController extends Controller
 {
+    protected $taskService;
+
+    public function __construct(TaskService $taskService) {
+        $this->taskService = $taskService;
+    }
+
+    /**
+     * Kullanıcının tüm görevlerini ve kategorilerini getir.
+     */
     public function index() {
         return Inertia::render('Dashboard', [
-            'tasks' => Task::where('user_id', Auth::id())->with('category')->get(),
-            'categories' => TaskCategory::all()
+            'tasks' => $this->taskService->getTasks(),
+            'categories' => $this->taskService->getAllCategories()
         ]);
     }
 
+    /**
+     * Yeni bir görev oluştur.
+     */
     public function store(Request $request) {
-        $request->validate([
+        $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:task_categories,id'
         ]);
 
-        Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'is_completed' => false,
-            'user_id' => Auth::id(),
-            'category_id' => $request->category_id
-        ]);
+        $task = $this->taskService->createTask($validatedData);
 
         return redirect()->back();
     }
 
+    /**
+     * Belirli bir görevi güncelle.
+     */
     public function update(Request $request, Task $task) {
         if ($task->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
+        $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:task_categories,id'
         ]);
 
-        $task->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'category_id' => $request->category_id
-        ]);
+        $updatedTask = $this->taskService->updateTask($task, $validatedData);
 
         return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
     }
 
-    public function complete(Task $task) {
+    /**
+     * Görev durumunu (status) güncelle.
+     */
+    public function toggleStatus(Request $request, Task $task) {
         if ($task->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
     
-        $task->update([
-            'is_completed' => !$task->is_completed
+        $validatedData = $request->validate([
+            'status' => 'required|integer|in:0,1,2'
         ]);
+    
+        $updatedTask = $this->taskService->toggleStatus($task, $validatedData['status']);
     
         return redirect()->route('dashboard')->with('success', 'Task status updated successfully!');
     }
 
-    public function toggleComplete(Request $request, Task $task) {
-        if ($task->user_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-    
-        $task->update([
-            'is_completed' => $request->is_completed
-        ]);
-    
-        return redirect()->route('dashboard')->with('success', 'Task status updated successfully!');
-    }
-    
-    
-
+    /**
+     * Görevi veritabanından kaldır.
+     */
     public function destroy(Task $task) {
         if ($task->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $task->delete();
+        $this->taskService->deleteTask($task);
 
         return redirect()->route('dashboard')->with('success', 'Task deleted successfully!');
     }
 
+    /**
+     * Görevlerin sırasını güncelle.
+     */
     public function reorder(Request $request) {
-        foreach ($request->tasks as $index => $task) {
-            Task::where('id', $task['id'])->update(['order' => $index]);
-        }
-        return response()->json(['message' => 'Tasks reordered successfully'], 200);
+        $this->taskService->reorderTasks($request->tasks);
+        
+        return redirect()->route('dashboard')->with('success', 'Tasks reordered successfully!');
     }
 }
