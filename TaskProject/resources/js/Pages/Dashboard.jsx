@@ -5,7 +5,7 @@ import { Head } from "@inertiajs/react";
 import Tasks from "@/Pages/Tasks";
 import TaskForm from "@/ApplicationComponents/TaskForm";
 import TaskCategoryForm from "@/ApplicationComponents/TaskCategoryForm";
-
+import { Inertia } from "@inertiajs/inertia"; // 📌 Arşivleme işlemi için gerekli
 
 export default function Dashboard() {
     const { tasks: initialTasks = [], categories = [] } = usePage().props;
@@ -14,8 +14,9 @@ export default function Dashboard() {
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
-    const [categoryModalOpen, setCategoryModalOpen] = useState(false); // ✅ Yeni state
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [selectedCategoryEdit, setSelectedCategoryEdit] = useState(null);
+    const [showArchived, setShowArchived] = useState(false); // 🟢 Arşivlenmiş görevleri göster/gizle
 
     // ✅ Arama ve Kategoriye Göre Filtreleme
     const [filteredTasks, setFilteredTasks] = useState(initialTasks);
@@ -24,31 +25,49 @@ export default function Dashboard() {
         const newFilteredTasks = tasks.filter((task) => {
             const category = categories.find((c) => c.id === task.category_id);
             const categoryName = category ? category.name.toLowerCase() : "";
-    
+
             const matchesSearch =
                 task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                categoryName.includes(searchQuery.toLowerCase()) || // ✅ Kategori adında arama
+                categoryName.includes(searchQuery.toLowerCase()) ||
                 searchQuery === "";
-    
+
             const matchesCategory = selectedCategory === "All" || Number(task.category_id) === Number(selectedCategory);
-    
-            return matchesSearch && matchesCategory;
+
+            const matchesArchiveStatus = showArchived ? task.is_archived : !task.is_archived; // ✅ Archive durumuna göre filtrele
+
+            return matchesSearch && matchesCategory && matchesArchiveStatus;
         });
-    
+
         setFilteredTasks(newFilteredTasks);
-    }, [searchQuery, selectedCategory, tasks, categories]);
-    
+    }, [searchQuery, selectedCategory, tasks, categories, showArchived]);
+
     // ✅ Görevlerin Drag & Drop sonrası state’ini güncelle
     const updateTasks = (updatedTasks) => {
         setTasks(updatedTasks);
+    };
+
+    // ✅ Görev Arşivleme / Geri Yükleme İşlemi
+    const handleArchiveToggle = (taskId, isArchived) => {
+        Inertia.put(`/tasks/${taskId}/toggle-archive`, { archive: !isArchived }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Eğer görev arşivlendi ise, arşivlenmişleri göster
+                if (!isArchived) {
+                    setShowArchived(true);
+                } else {
+                    setShowArchived(false); // Eğer geri yüklendiyse normal listeyi göster
+                }
+            },
+            onError: (error) => console.error("Error toggling archive status:", error),
+        });
     };
 
     return (
         <AuthenticatedLayout
             header={
                 <h2 className="text-3xl font-bold text-gray-800 tracking-wide">
-                    🗂️ Dashboard
+                    🗂️ Your Tasks
                 </h2>
             }
         >
@@ -57,17 +76,35 @@ export default function Dashboard() {
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="mx-auto max-w-5xl px-6">
                     
-                    {/* ✅ Welcome Back + Add Task Button */}
+                    {/* ✅ Welcome Back + Add Task + Archived Tasks Toggle */}
                     <div className="bg-white shadow-sm rounded-xl p-6 mb-6 flex justify-between items-center">
-                        <p className="text-gray-700 text-lg font-medium">
-                            ✅ Welcome back! Manage your tasks efficiently.
-                        </p>
-                        <button
-                            className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-200"
-                            onClick={() => { setSelectedTask(null); setModalOpen(true); }}
-                        >
-                            ➕ Add Task
-                        </button>
+                        <div className="flex gap-4">
+                            {/* 📌 Archive Toggle Butonu */}
+                            <button
+                                className={`px-6 py-3 font-semibold rounded-lg shadow-md transition duration-200 ${
+                                    showArchived ? "bg-yellow-600 text-white hover:bg-yellow-700" : "bg-gray-600 text-white hover:bg-gray-700"
+                                }`}
+                                onClick={() => setShowArchived(!showArchived)}
+                            >
+                                {showArchived ? "📂 Show Tasks" : "🗃️ Show Archived"}
+                            </button>
+
+                            {/* 📌 Add Task Butonu */}
+                            <button
+                                className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-200"
+                                onClick={() => { setSelectedTask(null); setModalOpen(true); }}
+                            >
+                                ➕ Add Task
+                            </button>
+
+                            {/* ✅ Add Category Button */}
+                            <button
+                                className="px-4 py-2 text-sm font-medium bg-purple-500 text-white rounded-lg shadow-md hover:bg-purple-600 transition duration-200"
+                                onClick={() => { setSelectedCategoryEdit(null); setCategoryModalOpen(true); }}
+                            >
+                                ➕ Add Category
+                            </button>
+                        </div>
                     </div>
 
                     <div className="bg-white shadow-md rounded-xl p-6">
@@ -93,7 +130,7 @@ export default function Dashboard() {
                                     All
                                 </button>
                                 {categories
-                                    .filter(category => tasks.some(task => task.category_id === category.id)) // ✅ Görevi olan kategorileri filtrele
+                                    .filter(category => tasks.some(task => task.category_id === category.id))
                                     .map((category) => (
                                         <button
                                             key={category.id}
@@ -106,36 +143,16 @@ export default function Dashboard() {
                                         >
                                             {category.name}
                                         </button>
-                                ))}
+                                    ))}
 
                                 
-                                {/* ✅ Add Category Button */}
-                                <button
-                                    className="px-4 py-2 text-sm font-medium bg-purple-500 text-white rounded-lg shadow-md hover:bg-purple-600 transition duration-200"
-                                    onClick={() => { setSelectedCategoryEdit(null); setCategoryModalOpen(true); }}
-                                >
-                                    ➕ Add Category
-                                </button>
                             </div>
                         </div>
 
-                        <Tasks tasks={filteredTasks} categories={categories} updateTasks={updateTasks} />
+                        <Tasks tasks={filteredTasks} categories={categories} updateTasks={updateTasks} onArchiveToggle={handleArchiveToggle} />
 
-                        {modalOpen && (
-                            <TaskForm
-                                isOpen={modalOpen}
-                                onClose={() => setModalOpen(false)}
-                                task={selectedTask}
-                            />
-                        )}
-
-                        {categoryModalOpen && (
-                            <TaskCategoryForm
-                                isOpen={categoryModalOpen}
-                                onClose={() => setCategoryModalOpen(false)}
-                                category={selectedCategoryEdit}
-                            />
-                        )}
+                        {modalOpen && <TaskForm isOpen={modalOpen} onClose={() => setModalOpen(false)} task={selectedTask} />}
+                        {categoryModalOpen && <TaskCategoryForm isOpen={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} category={selectedCategoryEdit} />}
                     </div>
                 </div>
             </div>

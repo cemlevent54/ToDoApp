@@ -66,4 +66,9 @@ class TaskService {
             Task::where('id', $task['id'])->update(['order' => $index]);
         }
     }
+
+    public function archiveTask(Task $task, bool $archive): Task {
+        $task->update(['is_archived' => $archive]);
+        return $task;
+    }
 }

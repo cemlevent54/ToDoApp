@@ -108,4 +108,19 @@ class TaskController extends Controller
         
         return redirect()->route('dashboard')->with('success', 'Tasks reordered successfully!');
     }
+
+    public function archiveTask(Request $request, Task $task) {
+        if ($task->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validatedData = $request->validate([
+            'archive' => 'required|boolean'
+        ]);
+
+        $updatedTask = $this->taskService->archiveTask($task, $validatedData['archive']);
+
+        return redirect()->route('dashboard')->with('success', 'Task archived successfully!');
+        // bu kısımda kaldık. archive için hem frontende hem backend'e eklenecek özellikler var. toggle
+    }
 }

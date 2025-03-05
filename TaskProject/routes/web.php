@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     // 📌 Görev Yönetimi
     Route::resource('tasks', TaskController::class)->except(['show', 'edit', 'create']);
     Route::put('/tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
+    Route::put('/tasks/{task}/toggle-archive', [TaskController::class, 'archiveTask'])->name('tasks.archive');
     
     // 📌 Hatalı Route'lar kaldırıldı, yerine doğru route eklendi
     Route::put('/tasks/{task}/toggle-status', [TaskController::class, 'toggleStatus'])->name('tasks.toggleStatus');
@@ -37,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/categories', [TaskCategoryController::class, 'store'])->name('categories.store');
     Route::put('/categories/{category}', [TaskCategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [TaskCategoryController::class, 'destroy'])->name('categories.destroy');
+
+    
 });
 
 
