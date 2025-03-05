@@ -5,17 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Task;
-use App\Models\TaskCategory;
 use Illuminate\Support\Facades\Auth;
 use App\Services\TaskService;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\TaskReorderService;
+use App\Services\TaskArchiveService;
 
 class TaskController extends Controller
 {
     protected $taskService;
+    protected $taskReorderService;
+    protected $taskArchiveService;
 
-    public function __construct(TaskService $taskService) {
+    public function __construct(TaskService $taskService, TaskReorderService $taskReorderService, TaskArchiveService $taskArchiveService) {
         $this->taskService = $taskService;
+        $this->taskReorderService = $taskReorderService;
+        $this->taskArchiveService = $taskArchiveService;
     }
 
     /**
@@ -38,9 +42,8 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:task_categories,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'priority' => 'nullable|integer|min:0', 
         ]);
-
-        
 
         $task = $this->taskService->createTask($validatedData);
 
@@ -61,9 +64,8 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:task_categories,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+            'priority' => 'nullable|integer|min:0',
         ]);
-
-        
 
         $updatedTask = $this->taskService->updateTask($task, $validatedData);
 
@@ -104,11 +106,22 @@ class TaskController extends Controller
      * Görevlerin sırasını güncelle.
      */
     public function reorder(Request $request) {
-        $this->taskService->reorderTasks($request->tasks);
-        
-        return redirect()->route('dashboard')->with('success', 'Tasks reordered successfully!');
+        dd($request->all());
+        $validatedData = $request->validate([
+            'tasks' => 'required|array',
+            'tasks.*.id' => 'required|exists:tasks,id',
+            'tasks.*.priority' => 'required|integer|min:0',
+            'tasks.*.status' => 'required|integer|in:0,1,2',
+        ]);
+    
+        $this->taskReorderService->reorderTasks($validatedData['tasks']);
+    
+        return redirect()->route('dashboard')->with('success', 'Task reordered successfully!');
     }
 
+    /**
+     * Görevi arşivle / arşivden çıkar.
+     */
     public function archiveTask(Request $request, Task $task) {
         if ($task->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -118,9 +131,8 @@ class TaskController extends Controller
             'archive' => 'required|boolean'
         ]);
 
-        $updatedTask = $this->taskService->archiveTask($task, $validatedData['archive']);
+        $updatedTask = $this->taskArchiveService->archiveTask($task, $validatedData['archive']);
 
         return redirect()->route('dashboard')->with('success', 'Task archived successfully!');
-        // bu kısımda kaldık. archive için hem frontende hem backend'e eklenecek özellikler var. toggle
     }
 }

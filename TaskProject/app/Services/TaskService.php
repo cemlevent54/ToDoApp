@@ -7,11 +7,13 @@ use App\Models\TaskCategory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+
 class TaskService {
 
     public function getTasks(): Collection {
         return Task::where('user_id', Auth::id())
                     ->with('category')
+                    ->orderBy('priority','asc')
                     ->get();
     }
 
@@ -19,6 +21,7 @@ class TaskService {
         return Task::where('user_id', Auth::id())
                     ->where('status', $status)
                     ->with('category')
+                    ->orderBy('priority', 'asc')
                     ->get();
     }
 
@@ -37,8 +40,9 @@ class TaskService {
             'status' => 0, // Varsayılan olarak "pending"
             'user_id' => Auth::id(),
             'category_id' => $data['category_id'] ?? null,
-            'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null, // Yeni
-            'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null, // Yeni
+            'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null,
+            'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null,
+            'priority' => $data['priority'] ?? 0,
         ]);
     }
 
@@ -53,6 +57,7 @@ class TaskService {
             'category_id' => $data['category_id'] ?? null,
             'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null,
             'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null,
+            'priority' => $data['priority'] ?? $task->priority,
         ]);
         return $task;
     }
@@ -64,16 +69,5 @@ class TaskService {
 
     public function deleteTask(Task $task): void {
         $task->delete();
-    }
-
-    public function reorderTasks(array $tasks): void {
-        foreach ($tasks as $index => $task) {
-            Task::where('id', $task['id'])->update(['order' => $index]);
-        }
-    }
-
-    public function archiveTask(Task $task, bool $archive): Task {
-        $task->update(['is_archived' => $archive]);
-        return $task;
     }
 }

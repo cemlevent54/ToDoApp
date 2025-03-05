@@ -1,42 +1,39 @@
 import { useState } from "react";
 import { Inertia } from "@inertiajs/inertia";
-import TaskDeleteForm from "@/ApplicationComponents/TaskDeleteForm"; // 📌 Silme Modalı
+import TaskDeleteForm from "@/ApplicationComponents/TaskDeleteForm";
+import useDarkMode from "@/Theme/useDarkMode"; // ✅ Dark mode için hook eklendi
 
 export default function TaskItem({ task, categoryName, onEdit }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [theme] = useDarkMode(); // ✅ Dark mode state
 
-    // 📌 Bugünün tarihini ve saatini al
     const now = new Date();
-    const today = now.toISOString().split("T")[0]; // yyyy-mm-dd
-    const currentTime = now.toTimeString().slice(0, 5); // HH:MM
+    const today = now.toISOString().split("T")[0];
+    const currentTime = now.toTimeString().slice(0, 5);
 
-    // 📅 Tarih ve saat bilgisini ayrıştırma
-    const formatDate = (dateTime) => dateTime ? dateTime.split(" ")[0] : "N/A"; // Sadece tarih
-    const formatTime = (dateTime) => dateTime && dateTime.includes(" ") ? dateTime.split(" ")[1].slice(0, 5) : "N/A"; // Sadece saat
+    const formatDate = (dateTime) => dateTime ? dateTime.split(" ")[0] : "N/A";
+    const formatTime = (dateTime) => dateTime && dateTime.includes(" ") ? dateTime.split(" ")[1].slice(0, 5) : "N/A";
 
-    // 📌 Status'e ve end_date'e göre class belirleme
     const getStatusClass = () => {
-        if (task.status === 2) return "bg-green-100"; // ✅ Completed (Tamamlanan görevler)
+        if (task.status === 2) return "bg-green-100 dark:bg-green-700"; 
 
-        // Eğer görev pending (0) veya ongoing (1) ise ve süresi dolmuşsa -> Kırmızı yap
         if (
             (task.status === 0 || task.status === 1) && 
             task.end_date &&
             (
-                task.end_date.split(" ")[0] < today || // Tarih geçmişse
-                (task.end_date.split(" ")[0] === today && task.end_date.split(" ")[1]?.slice(0, 5) < currentTime) // Bugünse ve saat geçmişse
+                task.end_date.split(" ")[0] < today || 
+                (task.end_date.split(" ")[0] === today && task.end_date.split(" ")[1]?.slice(0, 5) < currentTime)
             )
         ) {
-            return "bg-red-200"; // 🔴 Gecikmiş görevler
+            return "bg-red-200 dark:bg-red-700"; 
         }
 
-        if (task.status === 0) return "bg-yellow-100"; // ⏳ Pending
-        if (task.status === 1) return "bg-blue-100"; // 🔄 Ongoing
+        if (task.status === 0) return "bg-yellow-100 dark:bg-yellow-700";
+        if (task.status === 1) return "bg-blue-100 dark:bg-blue-700";
         
-        return "bg-gray-100"; // Varsayılan
+        return "bg-gray-100 dark:bg-gray-800"; 
     };
 
-    // 📌 Görev durumunu değiştir
     const toggleTaskStatus = () => {
         const newStatus = task.status === 2 ? 0 : task.status + 1;
         Inertia.put(`/tasks/${task.id}/toggle-status`, { status: newStatus }, {
@@ -45,7 +42,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
         });
     };
 
-    // 📌 Görevi Arşivleme / Geri Yükleme
     const toggleArchiveStatus = () => {
         Inertia.put(route('tasks.archive', { task: task.id }), { archive: !task.is_archived }, {
             preserveScroll: true,
@@ -55,29 +51,23 @@ export default function TaskItem({ task, categoryName, onEdit }) {
 
     return (
         <>
-            <div className={`p-4 rounded-lg shadow-md transition duration-300 ${getStatusClass()} hover:shadow-lg border border-gray-200`}>
-                {/* 📌 Kategori Adı */}
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600 mb-1">
+            <div className={`p-4 rounded-lg shadow-md transition duration-300 ${getStatusClass()} hover:shadow-lg border border-gray-200 dark:border-gray-600`}>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300 mb-1">
                     {categoryName}
                 </p>
 
-                {/* 📌 Görev Başlık ve Açıklama */}
-                <h3 className="text-md font-semibold text-gray-800">{task.title}</h3> 
+                <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200">{task.title}</h3> 
                 
-                <p className="text-gray-600 mt-1 text-xs">{task.description || "No description provided."}</p>
+                <p className="text-gray-600 dark:text-gray-400 mt-1 text-xs">{task.description || "No description provided."}</p>
 
-                {/* 📅 Başlangıç ve Bitiş Tarihleri */}
-                <p className="text-gray-500 text-xs mt-1">
+                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
                     <strong>Start:</strong> {formatDate(task.start_date)} - {formatTime(task.start_date)} <br />
                     <strong>End:</strong> {formatDate(task.end_date)} - {formatTime(task.end_date)}
                 </p>
 
-
-                {/* 📌 İşlemler */}
                 <div className="flex justify-between mt-3">
                     {!task.is_archived ? (
                         <>
-                            {/* 🔄 Durum Değiştirme Butonu */}
                             <button 
                                 onClick={toggleTaskStatus} 
                                 className={`px-3 py-1 text-xs font-semibold rounded shadow transition duration-200 ${
@@ -89,7 +79,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
                                 {task.status === 2 ? "✅" : task.status === 1 ? "🔄" : "⏳"}
                             </button>
 
-                            {/* ✏️ Düzenleme Butonu */}
                             <button 
                                 onClick={() => onEdit(task)} 
                                 className="px-3 py-1 text-xs font-semibold bg-blue-500 text-white rounded shadow hover:bg-blue-600 transition duration-200"
@@ -97,15 +86,13 @@ export default function TaskItem({ task, categoryName, onEdit }) {
                                 ✏️
                             </button>
 
-                            {/* 📂 Arşive Al Butonu */}
                             <button 
                                 onClick={toggleArchiveStatus} 
-                                className="px-3 py-1 text-xs font-semibold bg-gray-500 text-white rounded shadow hover:bg-gray-600 transition duration-200"
+                                className="px-3 py-1 text-xs font-semibold bg-gray-500 dark:bg-gray-700 text-white rounded shadow hover:bg-gray-600 dark:hover:bg-gray-500 transition duration-200"
                             >
                                 📂
                             </button>
 
-                            {/* 🗑️ Silme Butonu */}
                             <button 
                                 onClick={() => setShowDeleteModal(true)} 
                                 className="px-3 py-1 text-xs font-semibold bg-red-500 text-white rounded shadow hover:bg-red-600 transition duration-200"
@@ -115,7 +102,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
                         </>
                     ) : (
                         <>
-                            {/* 🔄 Restore Butonu */}
                             <button 
                                 onClick={toggleArchiveStatus} 
                                 className="px-3 py-1 text-xs font-semibold bg-purple-500 text-white rounded shadow hover:bg-purple-600 transition duration-200"
@@ -123,7 +109,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
                                 ♻️
                             </button>
 
-                            {/* 🗑️ Silme Butonu */}
                             <button 
                                 onClick={() => setShowDeleteModal(true)} 
                                 className="px-3 py-1 text-xs font-semibold bg-red-500 text-white rounded shadow hover:bg-red-600 transition duration-200"
@@ -135,7 +120,6 @@ export default function TaskItem({ task, categoryName, onEdit }) {
                 </div>
             </div>
 
-            {/* 📌 Task Delete Modal */}
             <TaskDeleteForm 
                 isOpen={showDeleteModal} 
                 onClose={() => setShowDeleteModal(false)} 

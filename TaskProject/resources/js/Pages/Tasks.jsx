@@ -3,15 +3,15 @@ import TaskItem from "@/ApplicationComponents/TaskItem";
 import TaskForm from "@/ApplicationComponents/TaskForm";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Inertia } from "@inertiajs/inertia";
+import useDarkMode from "@/Theme/useDarkMode"; // ✅ Dark Mode Hook eklendi
 
 export default function Tasks({ tasks = [], categories = [] }) {
     const [selectedTask, setSelectedTask] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [theme] = useDarkMode(); // ✅ Dark mode state
 
-    // Görevleri status'e göre filtreleme
     const getFilteredTasks = (status) => tasks.filter(task => task.status === status);
 
-    // Drag & Drop sonrası güncelleme
     const onDragEnd = (result) => {
         if (!result.destination) return;
 
@@ -21,15 +21,12 @@ export default function Tasks({ tasks = [], categories = [] }) {
 
         if (sourceColumn === destinationColumn) return;
 
-        // Taşınan görevi al
         const movedTask = tasks.find(task => task.id.toString() === result.draggableId);
         if (!movedTask) return;
 
-        // Yeni statüye göre değer ata
         const updatedStatus = destinationColumn === "pending" ? 0 :
                               destinationColumn === "ongoing" ? 1 : 2;
 
-        // Backend'e güncelleme gönder
         Inertia.put(`/tasks/${movedTask.id}/toggle-status`, {
             status: updatedStatus
         }, {
@@ -44,23 +41,24 @@ export default function Tasks({ tasks = [], categories = [] }) {
         <>
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {["pending", "ongoing", "completed"].map((statusKey, index) => (
+                    {["pending", "ongoing", "completed"].map((statusKey) => (
                         <Droppable key={statusKey} droppableId={statusKey}>
                             {(provided) => (
                                 <div
                                     ref={provided.innerRef}
                                     {...provided.droppableProps}
-                                    className={`bg-white shadow-lg rounded-xl p-6 ${
+                                    className={`shadow-lg rounded-xl p-6 transition ${
                                         statusKey === "completed" ? "border-green-500" : ""
-                                    }`}
+                                    } bg-white dark:bg-gray-600`}
                                 >
-                                    <h3 className="text-2xl font-semibold text-gray-800 tracking-wide mb-4">
+                                    <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 tracking-wide mb-4">
                                         {statusKey === "pending"
                                             ? "📝 Pending Tasks"
                                             : statusKey === "ongoing"
                                             ? "🕒 Ongoing Tasks"
                                             : "✅ Completed Tasks"}
                                     </h3>
+
                                     {getFilteredTasks(
                                         statusKey === "pending" ? 0 :
                                         statusKey === "ongoing" ? 1 : 2
@@ -93,7 +91,7 @@ export default function Tasks({ tasks = [], categories = [] }) {
                                             {provided.placeholder}
                                         </div>
                                     ) : (
-                                        <p className="text-gray-500 text-center italic">
+                                        <p className="text-gray-500 dark:text-gray-400 text-center italic">
                                             {statusKey === "pending"
                                                 ? "No pending tasks. 🎉"
                                                 : statusKey === "ongoing"

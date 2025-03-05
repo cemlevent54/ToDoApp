@@ -1,9 +1,11 @@
 import { Inertia } from "@inertiajs/inertia";
+import useDarkMode from "@/Theme/useDarkMode"; // ✅ Dark Mode Hook eklendi
 
 export default function TaskDeleteForm({ isOpen, onClose, taskId, isArchived }) {
     if (!isOpen) return null;
 
-    // 📌 Görevi Silme İşlemi
+    const [theme] = useDarkMode(); // ✅ Dark mode state
+
     const handleDelete = () => {
         onClose();
         Inertia.delete(`/tasks/${taskId}`, {
@@ -12,7 +14,6 @@ export default function TaskDeleteForm({ isOpen, onClose, taskId, isArchived }) 
         });
     };
 
-    // 📌 Görevi Arşivleme İşlemi
     const handleArchive = () => {
         onClose();
         Inertia.put(`/tasks/${taskId}/toggle-archive`, { archive: !isArchived }, {
@@ -23,39 +24,36 @@ export default function TaskDeleteForm({ isOpen, onClose, taskId, isArchived }) 
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-md z-50">
-            <div className="bg-white w-[350px] rounded-lg shadow-lg p-4 transition-all">
-                <h2 className="text-lg font-semibold text-gray-800 text-center">
+            <div className="w-[350px] rounded-lg shadow-lg p-4 transition-all bg-white dark:bg-gray-800">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 text-center">
                     {isArchived ? "Restore Task?" : "Are you sure?"}
                 </h2>
-                <p className="text-gray-600 text-xs mt-2 text-center">
+                <p className="text-gray-600 dark:text-gray-400 text-xs mt-2 text-center">
                     {isArchived 
                         ? "This will restore the task from the archive."
                         : "This action cannot be undone."}
                 </p>
 
                 <div className="flex justify-center gap-2 mt-4">
-                    {/* ❌ İptal Butonu */}
                     <button 
                         onClick={onClose} 
-                        className="px-3 py-1 text-sm font-medium bg-gray-400 text-white rounded shadow hover:bg-gray-500 transition"
+                        className="px-3 py-1 text-sm font-medium bg-gray-400 dark:bg-gray-600 text-white rounded shadow hover:bg-gray-500 dark:hover:bg-gray-500 transition"
                     >
                         Cancel
                     </button>
 
-                    {/* 📂 Arşivleme Butonu SADECE Arşivlenmemiş Görevler İçin */}
                     {isArchived === false && (
                         <button 
                             onClick={handleArchive} 
-                            className="px-3 py-1 text-sm font-medium bg-yellow-500 text-white rounded shadow hover:bg-yellow-600 transition"
+                            className="px-3 py-1 text-sm font-medium bg-yellow-500 dark:bg-yellow-600 text-white rounded shadow hover:bg-yellow-600 dark:hover:bg-yellow-700 transition"
                         >
                             Archive
                         </button>
                     )}
 
-                    {/* 🗑️ Silme Butonu */}
                     <button 
                         onClick={handleDelete} 
-                        className="px-3 py-1 text-sm font-medium bg-red-500 text-white rounded shadow hover:bg-red-600 transition"
+                        className="px-3 py-1 text-sm font-medium bg-red-500 dark:bg-red-600 text-white rounded shadow hover:bg-red-600 dark:hover:bg-red-700 transition"
                     >
                         Yes, Delete
                     </button>

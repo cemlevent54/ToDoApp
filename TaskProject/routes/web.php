@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
     Route::put('/tasks/{task}/toggle-archive', [TaskController::class, 'archiveTask'])->name('tasks.archive');
     
+    
     // 📌 Hatalı Route'lar kaldırıldı, yerine doğru route eklendi
     Route::put('/tasks/{task}/toggle-status', [TaskController::class, 'toggleStatus'])->name('tasks.toggleStatus');
 

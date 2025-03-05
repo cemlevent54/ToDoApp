@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\TaskArchiveService;
 use App\Services\TaskCategoryService;
+use App\Services\TaskReorderService;
 use App\Services\TaskService;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +23,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TaskCategoryService::class, function ($app): TaskCategoryService {
             return new TaskCategoryService();
         });
+
+        $this->app->singleton(TaskReorderService::class, function ($app): TaskReorderService {
+            return new TaskReorderService();
+        });
+
+        $this->app->singleton(TaskArchiveService::class, function ($app): TaskArchiveService {
+            return new TaskArchiveService();
+        });
+
 
 
     }
