@@ -5,11 +5,35 @@ import TaskDeleteForm from "@/ApplicationComponents/TaskDeleteForm"; // 📌 Sil
 export default function TaskItem({ task, categoryName, onEdit }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // 📌 Status'e göre class belirleme
+    // 📌 Bugünün tarihini ve saatini al
+    const now = new Date();
+    const today = now.toISOString().split("T")[0]; // yyyy-mm-dd
+    const currentTime = now.toTimeString().slice(0, 5); // HH:MM
+
+    // 📅 Tarih ve saat bilgisini ayrıştırma
+    const formatDate = (dateTime) => dateTime ? dateTime.split(" ")[0] : "N/A"; // Sadece tarih
+    const formatTime = (dateTime) => dateTime && dateTime.includes(" ") ? dateTime.split(" ")[1].slice(0, 5) : "N/A"; // Sadece saat
+
+    // 📌 Status'e ve end_date'e göre class belirleme
     const getStatusClass = () => {
-        if (task.status === 0) return "bg-yellow-100"; // Pending
-        if (task.status === 1) return "bg-blue-100"; // Ongoing
-        return "bg-green-100"; // Completed
+        if (task.status === 2) return "bg-green-100"; // ✅ Completed (Tamamlanan görevler)
+
+        // Eğer görev pending (0) veya ongoing (1) ise ve süresi dolmuşsa -> Kırmızı yap
+        if (
+            (task.status === 0 || task.status === 1) && 
+            task.end_date &&
+            (
+                task.end_date.split(" ")[0] < today || // Tarih geçmişse
+                (task.end_date.split(" ")[0] === today && task.end_date.split(" ")[1]?.slice(0, 5) < currentTime) // Bugünse ve saat geçmişse
+            )
+        ) {
+            return "bg-red-200"; // 🔴 Gecikmiş görevler
+        }
+
+        if (task.status === 0) return "bg-yellow-100"; // ⏳ Pending
+        if (task.status === 1) return "bg-blue-100"; // 🔄 Ongoing
+        
+        return "bg-gray-100"; // Varsayılan
     };
 
     // 📌 Görev durumunu değiştir
@@ -38,8 +62,16 @@ export default function TaskItem({ task, categoryName, onEdit }) {
                 </p>
 
                 {/* 📌 Görev Başlık ve Açıklama */}
-                <h3 className="text-md font-semibold text-gray-800">{task.title}</h3>
+                <h3 className="text-md font-semibold text-gray-800">{task.title}</h3> 
+                
                 <p className="text-gray-600 mt-1 text-xs">{task.description || "No description provided."}</p>
+
+                {/* 📅 Başlangıç ve Bitiş Tarihleri */}
+                <p className="text-gray-500 text-xs mt-1">
+                    <strong>Start:</strong> {formatDate(task.start_date)} - {formatTime(task.start_date)} <br />
+                    <strong>End:</strong> {formatDate(task.end_date)} - {formatTime(task.end_date)}
+                </p>
+
 
                 {/* 📌 İşlemler */}
                 <div className="flex justify-between mt-3">

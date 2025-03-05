@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\TaskCategory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 class TaskService {
 
     public function getTasks(): Collection {
@@ -35,7 +36,9 @@ class TaskService {
             'description' => $data['description'] ?? null,
             'status' => 0, // Varsayılan olarak "pending"
             'user_id' => Auth::id(),
-            'category_id' => $data['category_id'] ?? null
+            'category_id' => $data['category_id'] ?? null,
+            'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null, // Yeni
+            'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null, // Yeni
         ]);
     }
 
@@ -47,7 +50,9 @@ class TaskService {
         $task->update([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'category_id' => $data['category_id'] ?? null
+            'category_id' => $data['category_id'] ?? null,
+            'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null,
+            'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null,
         ]);
         return $task;
     }

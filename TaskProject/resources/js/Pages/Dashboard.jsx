@@ -17,6 +17,8 @@ export default function Dashboard() {
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [selectedCategoryEdit, setSelectedCategoryEdit] = useState(null);
     const [showArchived, setShowArchived] = useState(false); // 🟢 Arşivlenmiş görevleri göster/gizle
+    const [startDateFilter, setStartDateFilter] = useState("");
+    const [endDateFilter, setEndDateFilter] = useState(""); 
 
     // ✅ Arama ve Kategoriye Göre Filtreleme
     const [filteredTasks, setFilteredTasks] = useState(initialTasks);
@@ -33,14 +35,20 @@ export default function Dashboard() {
                 searchQuery === "";
 
             const matchesCategory = selectedCategory === "All" || Number(task.category_id) === Number(selectedCategory);
-
+            
             const matchesArchiveStatus = showArchived ? task.is_archived : !task.is_archived; // ✅ Archive durumuna göre filtrele
+            
+            // 📅 Tarih bazlı filtreleme
+            const taskStartDate = task.start_date ? task.start_date.split(" ")[0] : null;
+            const taskEndDate = task.end_date ? task.end_date.split(" ")[0] : null;
+            const matchesStartDate = !startDateFilter || (taskStartDate && taskStartDate >= startDateFilter);
+            const matchesEndDate = !endDateFilter || (taskEndDate && taskEndDate <= endDateFilter);
 
-            return matchesSearch && matchesCategory && matchesArchiveStatus;
+            return matchesSearch && matchesCategory && matchesArchiveStatus && matchesStartDate && matchesEndDate;
         });
 
         setFilteredTasks(newFilteredTasks);
-    }, [searchQuery, selectedCategory, tasks, categories, showArchived]);
+    }, [searchQuery, selectedCategory, tasks, categories, showArchived, startDateFilter, endDateFilter]);
 
     // ✅ Görevlerin Drag & Drop sonrası state’ini güncelle
     const updateTasks = (updatedTasks) => {
@@ -102,9 +110,29 @@ export default function Dashboard() {
                                 className="px-4 py-2 text-sm font-medium bg-purple-500 text-white rounded-lg shadow-md hover:bg-purple-600 transition duration-200"
                                 onClick={() => { setSelectedCategoryEdit(null); setCategoryModalOpen(true); }}
                             >
-                                ➕ Add Category
+                                ✚ Add Category
                             </button>
                         </div>
+                    </div>
+
+                    
+
+                    {/* 📅 Tarih bazlı filtreleme */}
+                    <div className="flex flex-wrap gap-3 mb-6">
+                        <input
+                            type="date"
+                            value={startDateFilter}
+                            onChange={(e) => setStartDateFilter(e.target.value)}
+                            className="p-3 border rounded-lg"
+                            placeholder="Start Date"
+                        />
+                        <input
+                            type="date"
+                            value={endDateFilter}
+                            onChange={(e) => setEndDateFilter(e.target.value)}
+                            className="p-3 border rounded-lg"
+                            placeholder="End Date"
+                        />
                     </div>
 
                     <div className="bg-white shadow-md rounded-xl p-6">
