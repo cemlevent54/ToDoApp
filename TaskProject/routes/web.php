@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskCategoryController;
+use App\Http\Controllers\SocialiteController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -18,6 +19,13 @@ Route::get('/', function () {
 
 // 📌 Dashboard artık `TaskController@index` üzerinden verileri alacak
 Route::get('/dashboard', [TaskController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
+
+Route::controller(SocialiteController::class)->group(function() {
+    Route::get('auth/google', [SocialiteController::class, 'googleLogin'])->name('auth.google');
+    Route::get('auth/google-callback', [SocialiteController::class, 'googleAuthentication']);
+
+});
 
 Route::middleware('auth')->group(function () {
     // 📌 Profil Yönetimi
