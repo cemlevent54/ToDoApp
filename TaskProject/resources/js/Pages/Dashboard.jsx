@@ -6,7 +6,7 @@ import Tasks from "@/Pages/Tasks";
 import TaskForm from "@/ApplicationComponents/TaskForm";
 import TaskCategoryForm from "@/ApplicationComponents/TaskCategoryForm";
 import { Inertia } from "@inertiajs/inertia"; 
-import useDarkMode from "@/Theme/useDarkMode"; 
+import useDarkMode from "@/Theme/useDarkMode"; // ✅ Dark mode için hook eklendi
 
 export default function Dashboard() {
     const { tasks: initialTasks = [], categories = [] } = usePage().props;
@@ -20,7 +20,7 @@ export default function Dashboard() {
     const [showArchived, setShowArchived] = useState(false);
     const [startDateFilter, setStartDateFilter] = useState("");
     const [endDateFilter, setEndDateFilter] = useState(""); 
-    const [theme] = useDarkMode(); 
+    const [theme] = useDarkMode(); // ✅ Dark mode durumu 
 
     const [filteredTasks, setFilteredTasks] = useState(initialTasks);
 
@@ -57,7 +57,11 @@ export default function Dashboard() {
         Inertia.put(`/tasks/${taskId}/toggle-archive`, { archive: !isArchived }, {
             preserveScroll: true,
             onSuccess: () => {
-                setShowArchived(!isArchived);
+                if (!isArchived) {
+                    setShowArchived(true);
+                } else {
+                    setShowArchived(false);
+                }
             },
             onError: (error) => console.error("Error toggling archive status:", error),
         });
@@ -76,7 +80,7 @@ export default function Dashboard() {
             <div className="py-12 min-h-screen bg-gray-50 dark:bg-gray-900">
                 <div className="mx-auto max-w-5xl px-6">
                     
-                    {/* Üst Menü - Archived Toggle, Add Task, Add Category */}
+                    {/* Welcome Back + Add Task + Archived Tasks Toggle */}
                     <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-6 mb-6 flex justify-between items-center">
                         <div className="flex gap-4">
                             <button
@@ -90,27 +94,21 @@ export default function Dashboard() {
 
                             <button
                                 className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-200"
-                                onClick={() => { 
-                                    setSelectedTask(null); 
-                                    setModalOpen(true); 
-                                }}
+                                onClick={() => { setSelectedTask(null); setModalOpen(true); }}
                             >
                                 ➕ Add Task
                             </button>
 
                             <button
                                 className="px-4 py-2 text-sm font-medium bg-purple-500 text-white rounded-lg shadow-md hover:bg-purple-600 transition duration-200"
-                                onClick={() => { 
-                                    setSelectedCategoryEdit(null); 
-                                    setCategoryModalOpen(true); 
-                                }}
+                                onClick={() => { setSelectedCategoryEdit(null); setCategoryModalOpen(true); }}
                             >
                                 ✚ Add Category
                             </button>
                         </div>
                     </div>
 
-                    {/* Tarih Bazlı Filtreleme */}
+                    {/* Tarih bazlı filtreleme */}
                     <div className="flex flex-wrap gap-3 mb-6">
                         <input
                             type="date"
@@ -126,7 +124,6 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    {/* Görevler Listesi */}
                     <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl p-6">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                             <input
@@ -136,33 +133,40 @@ export default function Dashboard() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+
+                            <div className="flex flex-wrap gap-2 items-center">
+                                <button
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                        selectedCategory === "All"
+                                            ? "bg-blue-500 text-white shadow-md"
+                                            : "bg-gray-200 dark:bg-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                                    }`}
+                                    onClick={() => setSelectedCategory("All")}
+                                >
+                                    All
+                                </button>
+                                {categories
+                                    .filter(category => tasks.some(task => task.category_id === category.id))
+                                    .map((category) => (
+                                        <button
+                                            key={category.id}
+                                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                                selectedCategory === category.id
+                                                    ? "bg-blue-500 text-white shadow-md"
+                                                    : "bg-gray-200 dark:bg-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600"
+                                            }`}
+                                            onClick={() => setSelectedCategory(category.id)}
+                                        >
+                                            {category.name}
+                                        </button>
+                                    ))}
+                            </div>
                         </div>
 
-                        {/* Task Bileşeni */}
-                        <Tasks 
-                            tasks={filteredTasks} 
-                            categories={categories} 
-                            updateTasks={updateTasks} 
-                            onArchiveToggle={handleArchiveToggle} 
-                            isArchived={showArchived} // ✅ Archived durumu Task bileşenine gidiyor
-                        />
+                        <Tasks tasks={filteredTasks} categories={categories} updateTasks={updateTasks} onArchiveToggle={handleArchiveToggle} />
 
-                        {/* Modallar */}
-                        {modalOpen && (
-                            <TaskForm 
-                                isOpen={modalOpen} 
-                                onClose={() => setModalOpen(false)} 
-                                task={selectedTask} 
-                                isArchived={showArchived} // ✅ Arşiv durumu TaskForm'a gidiyor
-                            />
-                        )}
-                        {categoryModalOpen && (
-                            <TaskCategoryForm 
-                                isOpen={categoryModalOpen} 
-                                onClose={() => setCategoryModalOpen(false)} 
-                                category={selectedCategoryEdit} 
-                            />
-                        )}
+                        {modalOpen && <TaskForm isOpen={modalOpen} onClose={() => setModalOpen(false)} task={selectedTask} />}
+                        {categoryModalOpen && <TaskCategoryForm isOpen={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} category={selectedCategoryEdit} />}
                     </div>
                 </div>
             </div>
