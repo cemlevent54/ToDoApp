@@ -34,11 +34,15 @@ class TaskService {
             throw new \Exception("Unauthorized category selection.");
         }
 
+        $data['status'] = intval($data['status']);
+        $data['is_archived'] = isset($data['is_archived']) ? boolval($data['is_archived']) : false;
+
         return Task::create([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'status' => 0, // Varsayılan olarak "pending"
+            'status' => $data['status'], // Varsayılan olarak "pending"
             'user_id' => Auth::id(),
+            'is_archived' => $data['is_archived'],
             'category_id' => $data['category_id'] ?? null,
             'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null,
             'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null,
@@ -50,10 +54,15 @@ class TaskService {
         if (isset($data['category_id']) && !TaskCategory::where('id', $data['category_id'])->where('user_id', Auth::id())->exists()) {
             throw new \Exception("Unauthorized category selection.");
         }
-
+        
+        $data['status'] = intval($data['status']);
+        $data['is_archived'] = isset($data['is_archived']) ? boolval($data['is_archived']) : false;
+        
         $task->update([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
+            'status' => $data['status'],
+            'is_archived' => $data['is_archived'],
             'category_id' => $data['category_id'] ?? null,
             'start_date' => isset($data['start_date']) ? Carbon::parse($data['start_date']) : null,
             'end_date' => isset($data['end_date']) ? Carbon::parse($data['end_date']) : null,

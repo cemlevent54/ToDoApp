@@ -36,15 +36,21 @@ class TaskController extends Controller
      * Yeni bir görev oluştur.
      */
     public function store(Request $request) {
+        // dd($request->all());
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:task_categories,id',
+            'status' => 'required|integer|min:0|max:2',
+            'is_archived' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'priority' => 'nullable|integer|min:0', 
         ]);
-
+        
+        $validatedData['status'] = intval($validatedData['status']);
+        $validatedData['is_archived'] = $request->has('is_archived') ? boolval($request->is_archived) : false;
+        // dd($validatedData);
         $task = $this->taskService->createTask($validatedData);
 
         return redirect()->back();
@@ -62,10 +68,16 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:task_categories,id',
+            'status' => 'required|integer|min:0|max:2',
+            'is_archived' => 'boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'priority' => 'nullable|integer|min:0',
         ]);
+
+        $validatedData['status'] = intval($validatedData['status']);
+        $validatedData['is_archived'] = $request->has('is_archived') ? boolval($request->is_archived) : false;
+        
 
         $updatedTask = $this->taskService->updateTask($task, $validatedData);
 

@@ -1,27 +1,27 @@
 import { useState, useEffect } from "react";
 import { Inertia } from "@inertiajs/inertia";
 import { usePage } from "@inertiajs/react";
-import useDarkMode from "@/Theme/useDarkMode"; // ✅ Dark Mode Hook eklendi
+import useDarkMode from "@/Theme/useDarkMode"; 
 
-export default function TaskForm({ isOpen, onClose, task }) {
+export default function TaskForm({ isOpen, onClose, task, defaultStatus = 0, isArchived = false }) {
     const { categories = [] } = usePage().props;
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("");
-    const [status, setStatus] = useState(0);
+    const [status, setStatus] = useState(defaultStatus);
     const [startDate, setStartDate] = useState("");  
     const [endDate, setEndDate] = useState("");
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
     const [showToast, setShowToast] = useState(false);
-    const [theme] = useDarkMode(); // ✅ Dark mode state
+    const [theme] = useDarkMode();
 
     useEffect(() => {
         if (task) {
-            setTitle(task.title ?? "");
-            setDescription(task.description ?? "");
-            setCategory(task.category_id ?? categories?.[0]?.id ?? "");
-            setStatus(task.status ?? 0);
+            setTitle(task.title || "");
+            setDescription(task.description || "");
+            setCategory(task.category_id || (categories.length > 0 ? categories[0].id : ""));
+            setStatus(task.status ?? defaultStatus);
             setStartDate(task.start_date ? task.start_date.split(" ")[0] : "");
             setEndDate(task.end_date ? task.end_date.split(" ")[0] : "");
             setStartTime(task.start_date ? task.start_date.split(" ")[1]?.slice(0, 5) : "");
@@ -29,36 +29,41 @@ export default function TaskForm({ isOpen, onClose, task }) {
         } else {
             setTitle("");
             setDescription("");
-            setCategory(categories?.[0]?.id ?? "");
-            setStatus(0);
+            setCategory(categories.length > 0 ? categories[0].id : "");
+            setStatus(defaultStatus);
             setStartDate("");
             setEndDate("");
             setStartTime("");
             setEndTime("");
         }
-    }, [task, categories]);
+    }, [task, categories, defaultStatus]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const formattedStartDate = startDate && startTime ? `${startDate} ${startTime}:00` : null;
         const formattedEndDate = endDate && endTime ? `${endDate} ${endTime}:00` : null;
 
+        // ✅ Konsolda gönderilen verileri kontrol et
+        console.log("🚀 Gönderilen Status:", status);
+        console.log("📦 Gönderilen Task Verisi:", { title, description, category_id: category, status, is_archived: isArchived, start_date: formattedStartDate, end_date: formattedEndDate });
+
         const data = { 
             title, 
             description, 
             category_id: category, 
-            status,
+            status: Number(status),
+            is_archived: isArchived, // ✅ Görev arşivli mi değil mi bilgisini ekledik
             start_date: formattedStartDate,
             end_date: formattedEndDate
         };
 
         if (task) {
             Inertia.put(`/tasks/${task.id}`, data, {
-                onSuccess: () => showSuccessMessage(),
+                onSuccess: showSuccessMessage,
             });
         } else {
             Inertia.post("/tasks", data, {
-                onSuccess: () => showSuccessMessage(),
+                onSuccess: showSuccessMessage,
             });
         }
     };
@@ -108,7 +113,6 @@ export default function TaskForm({ isOpen, onClose, task }) {
                         ))}
                     </select>
 
-                    {/* 📅 Tarih & Saat Seçimi */}
                     <div className="flex flex-col space-y-2">
                         <label className="text-gray-700 dark:text-gray-300 font-medium">Start Date & Time</label>
                         <div className="flex gap-2">
@@ -144,28 +148,15 @@ export default function TaskForm({ isOpen, onClose, task }) {
                     </div>
 
                     <div className="flex justify-end gap-2">
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
-                            className="px-4 py-2 text-md font-medium bg-gray-400 dark:bg-gray-600 text-white rounded-md shadow hover:bg-gray-500 dark:hover:bg-gray-500 transition"
-                        >
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-400 text-white rounded-md">
                             Cancel
                         </button>
-                        <button 
-                            type="submit" 
-                            className="px-4 py-2 text-md font-medium bg-blue-500 dark:bg-blue-600 text-white rounded-md shadow hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-                        >
+                        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
                             {task ? "Update" : "Create"}
                         </button>
                     </div>
                 </form>
             </div>
-
-            {showToast && (
-                <div className="fixed bottom-6 right-6 bg-green-500 dark:bg-green-700 text-white px-5 py-3 rounded-lg shadow-lg animate-bounce">
-                    {task ? "Task Updated!" : "Task Created!"}
-                </div>
-            )}
         </div>
     ) : null;
 }
