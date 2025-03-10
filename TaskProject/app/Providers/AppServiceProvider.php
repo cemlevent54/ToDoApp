@@ -8,6 +8,7 @@ use App\Services\TaskReorderService;
 use App\Services\TaskService;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use App\Services\CalendarService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(TaskArchiveService::class, function ($app): TaskArchiveService {
             return new TaskArchiveService();
+        });
+
+        $this->app->singleton(CalendarService::class, function ($app): CalendarService {
+            return new CalendarService();
         });
 
 

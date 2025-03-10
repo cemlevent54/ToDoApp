@@ -13,7 +13,7 @@ class Task extends Model
     'status', 'is_archived', 
     'user_id', 'category_id', 
     'start_date', 'end_date', 
-    'priority'];
+    'priority', 'google_event_id'];
 
     public function user()
     {

@@ -20,11 +20,9 @@ Route::get('/', function () {
 // 📌 Dashboard artık `TaskController@index` üzerinden verileri alacak
 Route::get('/dashboard', [TaskController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-
 Route::controller(SocialiteController::class)->group(function() {
     Route::get('auth/google', [SocialiteController::class, 'googleLogin'])->name('auth.google');
     Route::get('auth/google-callback', [SocialiteController::class, 'googleAuthentication']);
-
 });
 
 Route::middleware('auth')->group(function () {
@@ -37,19 +35,17 @@ Route::middleware('auth')->group(function () {
     Route::resource('tasks', TaskController::class)->except(['show', 'edit', 'create']);
     Route::put('/tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
     Route::put('/tasks/{task}/toggle-archive', [TaskController::class, 'archiveTask'])->name('tasks.archive');
-    
-    
-    // 📌 Hatalı Route'lar kaldırıldı, yerine doğru route eklendi
     Route::put('/tasks/{task}/toggle-status', [TaskController::class, 'toggleStatus'])->name('tasks.toggleStatus');
 
-    // Kategori Yönetimi
+    // 📌 Kategori Yönetimi
     Route::get('/categories', [TaskCategoryController::class, 'index'])->name('categories.index');
     Route::post('/categories', [TaskCategoryController::class, 'store'])->name('categories.store');
     Route::put('/categories/{category}', [TaskCategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [TaskCategoryController::class, 'destroy'])->name('categories.destroy');
 
-    
+    // 📌 Google Takvim Entegrasyonu
+    Route::post('/profile/toggle-google-sync', [ProfileController::class, 'toggleGoogleSync'])->name('profile.toggleGoogleSync');
+    Route::post('/tasks/sync-google', [TaskController::class, 'syncGoogleTasks'])->name('tasks.syncGoogle'); // ✅ Yeni route eklendi
 });
-
 
 require __DIR__.'/auth.php';

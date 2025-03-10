@@ -60,4 +60,22 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * Kullanıcının Google Sync durumunu aç/kapat.
+     */
+    public function toggleGoogleSync(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Google Sync durumunu tersine çevir
+        $user->google_sync = !$user->google_sync;
+        $user->save();
+
+        return response()->json(['google_sync' => $user->google_sync]);
+    }
 }

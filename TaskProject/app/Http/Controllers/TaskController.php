@@ -9,104 +9,75 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\TaskService;
 use App\Services\TaskReorderService;
 use App\Services\TaskArchiveService;
+use App\Services\CalendarService;
 
 class TaskController extends Controller
 {
     protected $taskService;
     protected $taskReorderService;
     protected $taskArchiveService;
+    protected $calendarService;
 
-    public function __construct(TaskService $taskService, TaskReorderService $taskReorderService, TaskArchiveService $taskArchiveService) {
+    public function __construct(
+        TaskService $taskService,
+        TaskReorderService $taskReorderService,
+        TaskArchiveService $taskArchiveService,
+        CalendarService $calendarService
+    ) {
         $this->taskService = $taskService;
         $this->taskReorderService = $taskReorderService;
         $this->taskArchiveService = $taskArchiveService;
+        $this->calendarService = $calendarService;
     }
 
-    /**
-     * Kullanıcının tüm görevlerini ve kategorilerini getir.
-     */
-    public function index() {
+    public function index()
+    {
         return Inertia::render('Dashboard', [
             'tasks' => $this->taskService->getTasks(),
-            'categories' => $this->taskService->getAllCategories()
+            'categories' => $this->taskService->getAllCategories(),
+            'user' => Auth::user()
         ]);
     }
 
-    /**
-     * Yeni bir görev oluştur.
-     */
-    public function store(Request $request) {
-        // dd($request->all());
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:task_categories,id',
-            'status' => 'required|integer|min:0|max:2',
-            'is_archived' => 'boolean',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'priority' => 'nullable|integer|min:0', 
-        ]);
-        
-        $validatedData['status'] = intval($validatedData['status']);
-        $validatedData['is_archived'] = $request->has('is_archived') ? boolval($request->is_archived) : false;
-        // dd($validatedData);
+    public function store(Request $request)
+    {
+        $validatedData = $this->validateTask($request);
         $task = $this->taskService->createTask($validatedData);
 
-        return redirect()->back();
+        // ✅ Google Sync Açıksa Görevi Google Calendar'a da Ekle
+        if ($this->isGoogleSyncEnabled()) {
+            $this->calendarService->addTaskToCalendar($task);
+        }
+
+        return redirect()->back()->with('success', 'Task created successfully!');
     }
 
-    /**
-     * Belirli bir görevi güncelle.
-     */
-    public function update(Request $request, Task $task) {
-        if ($task->user_id !== Auth::id()) {
+    public function update(Request $request, Task $task)
+    {
+        if (!$this->isAuthorized($task)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:task_categories,id',
-            'status' => 'required|integer|min:0|max:2',
-            'is_archived' => 'boolean',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'priority' => 'nullable|integer|min:0',
-        ]);
-
-        $validatedData['status'] = intval($validatedData['status']);
-        $validatedData['is_archived'] = $request->has('is_archived') ? boolval($request->is_archived) : false;
-        
-
+        $validatedData = $this->validateTask($request);
         $updatedTask = $this->taskService->updateTask($task, $validatedData);
+
+        // ✅ Google Sync Açıksa Görevi Google Calendar'da da Güncelle
+        if ($this->isGoogleSyncEnabled()) {
+            $this->calendarService->updateTaskInCalendar($updatedTask);
+        }
 
         return redirect()->route('dashboard')->with('success', 'Task updated successfully!');
     }
 
-    /**
-     * Görev durumunu (status) güncelle.
-     */
-    public function toggleStatus(Request $request, Task $task) {
-        if ($task->user_id !== Auth::id()) {
+    public function destroy(Task $task)
+    {
+        if (!$this->isAuthorized($task)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
-    
-        $validatedData = $request->validate([
-            'status' => 'required|integer|in:0,1,2'
-        ]);
-    
-        $updatedTask = $this->taskService->toggleStatus($task, $validatedData['status']);
-    
-        return redirect()->route('dashboard')->with('success', 'Task status updated successfully!');
-    }
 
-    /**
-     * Görevi veritabanından kaldır.
-     */
-    public function destroy(Task $task) {
-        if ($task->user_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+        // ✅ Google Sync Açıksa Görevi Google Calendar'dan da Sil
+        if ($this->isGoogleSyncEnabled()) {
+            $this->calendarService->deleteTaskFromCalendar($task);
         }
 
         $this->taskService->deleteTask($task);
@@ -114,28 +85,9 @@ class TaskController extends Controller
         return redirect()->route('dashboard')->with('success', 'Task deleted successfully!');
     }
 
-    /**
-     * Görevlerin sırasını güncelle.
-     */
-    public function reorder(Request $request) {
-        dd($request->all());
-        $validatedData = $request->validate([
-            'tasks' => 'required|array',
-            'tasks.*.id' => 'required|exists:tasks,id',
-            'tasks.*.priority' => 'required|integer|min:0',
-            'tasks.*.status' => 'required|integer|in:0,1,2',
-        ]);
-    
-        $this->taskReorderService->reorderTasks($validatedData['tasks']);
-    
-        return redirect()->route('dashboard')->with('success', 'Task reordered successfully!');
-    }
-
-    /**
-     * Görevi arşivle / arşivden çıkar.
-     */
-    public function archiveTask(Request $request, Task $task) {
-        if ($task->user_id !== Auth::id()) {
+    public function archiveTask(Request $request, Task $task)
+    {
+        if (!$this->isAuthorized($task)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -145,6 +97,44 @@ class TaskController extends Controller
 
         $updatedTask = $this->taskArchiveService->archiveTask($task, $validatedData['archive']);
 
+        // ✅ Google Sync Açıksa Görevi Google Calendar'da da Güncelle
+        if ($this->isGoogleSyncEnabled()) {
+            $this->calendarService->updateTaskInCalendar($updatedTask);
+        }
+
         return redirect()->route('dashboard')->with('success', 'Task archived successfully!');
+    }
+
+    public function syncGoogleTasks()
+    {
+        if (!$this->isGoogleSyncEnabled()) {
+            return response()->json(['error' => 'Google Sync is disabled.'], 403);
+        }
+
+        $this->calendarService->syncTasksFromGoogleCalendar();
+
+        return redirect()->route('dashboard')->with('success', 'Google Calendar sync completed.');
+    }
+
+    private function isGoogleSyncEnabled()
+    {
+        return Auth::check() && Auth::user()->google_sync;
+    }
+
+    private function validateTask(Request $request)
+    {
+        return $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:task_categories,id',
+            'status' => 'required|integer|min:0|max:2',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+    }
+
+    private function isAuthorized(Task $task)
+    {
+        return $task->user_id === Auth::id();
     }
 }
